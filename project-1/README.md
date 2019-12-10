@@ -19,5 +19,26 @@
 - `env!("CARGO_PKG_AUTHORS")` &mdash; value for `authors` from `[package]`-section in Cargo.toml
 - `env!("CARGO_PKG_DESCRIPTION")` &mdash; value for `description` from `[package]`-section in Cargo.toml
 
+## Part 3
+
+## Part 4
+
+- how to get `Option<String>` 
+
+```rust,no_run
+use std::collections::HashMap;
+
+struct KvStore {
+    map: HashMap<String, String>,
+}
+
+impl KvStore {
+    pub fn get(&self, key: String) -> Option<String> {
+        self.map.get(&key).cloned()
+    }
+}
+
+``` 
+
 <!-- links -->
-[Project-1]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-1/project.md
+<!-- [Project-1]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-1/project.md -->
