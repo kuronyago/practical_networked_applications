@@ -38,7 +38,21 @@ impl KvStore {
     }
 }
 
-``` 
+```
+
+## Part 5
+
+- `cargo doc --open`
+
+## Part 6
+
+```
+rustup component add clippy
+rustup component add rustfmt
+
+cargo clippy
+cargo fmt
+```
 
 <!-- links -->
-<!-- [Project-1]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-1/project.md -->
+[Project-1]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-1/project.md
