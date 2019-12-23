@@ -1,5 +1,6 @@
 use clap::{App, Arg, SubCommand};
-use kvs::Result;
+use kvs::{KvStore, Result};
+use std::env::current_dir;
 use std::process::exit;
 
 fn main() -> Result<()> {
@@ -23,9 +24,15 @@ fn main() -> Result<()> {
             eprintln!("unimplemented");
             exit(1);
         }
-        ("set", Some(_matches)) => {
-            eprintln!("unimplemented");
-            exit(1);
+        ("set", Some(matches)) => {
+            let key: &str = matches.value_of("KEY").expect("KEY argument missing");
+            let value: &str = matches.value_of("VALUE").expect("VALUE argument missing");
+
+            let path = current_dir()?;
+
+            let mut store: KvStore = KvStore::open(&path)?;
+
+            store.set(key.to_owned(), value.to_owned())
         }
         ("rm", Some(_matches)) => {
             eprintln!("unimplemented");

@@ -16,6 +16,7 @@ test = false
 
 [dependencies]
 clap = "2.33.0"
+serde = { version = "1.0.104", features = ["derive"] }
 
 [dev-dependencies]
 assert_cmd = "0.12.0"

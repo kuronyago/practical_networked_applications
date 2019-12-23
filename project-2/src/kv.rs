@@ -1,4 +1,5 @@
 use super::Result;
+use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -30,4 +31,10 @@ impl KvStore {
     pub fn open(_path: &std::path::Path) -> Result<Self> {
         unimplemented!();
     }
+}
+
+#[derive(Serialize)]
+enum Command {
+    Set { key: String, value: String },
+    Remove { key: String },
 }
