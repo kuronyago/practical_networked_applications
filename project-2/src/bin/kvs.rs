@@ -20,24 +20,26 @@ fn main() -> Result<()> {
         .get_matches();
 
     match app.subcommand() {
-        ("get", Some(matches)) => {
-            let key: &str = matches.value_of("KEY").expect("KEY argument missing");
-            let path = current_dir()?;
-            let store: KvStore = KvStore::open(&path)?;
-            let result = store.get(key.to_owned())?;
-            if let Some(value) = result {
-                println!("{}", value);
-            } else {
-                println!("key not found");
-            }
-        }
         ("set", Some(matches)) => {
             let key: &str = matches.value_of("KEY").expect("KEY argument missing");
             let value: &str = matches.value_of("VALUE").expect("VALUE argument missing");
             let path = current_dir()?;
             let mut store: KvStore = KvStore::open(&path)?;
-            store.set(key.to_owned(), value.to_owned())?;
+            store.set(key.to_string(), value.to_string())?;
         }
+
+        ("get", Some(matches)) => {
+            let key: &str = matches.value_of("KEY").expect("KEY argument missing");
+            let path = current_dir()?;
+            let mut store: KvStore = KvStore::open(&path)?;
+
+            if let Some(value) = store.get(key.to_owned())? {
+                println!("{}", value);
+            } else {
+                println!("key not found");
+            }
+        }
+
         ("rm", Some(matches)) => {
             let key: &str = matches.value_of("KEY").expect("KEY argument missing");
             let path = current_dir()?;
