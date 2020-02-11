@@ -19,4 +19,4 @@
 ## Part 7
 
 <!-- links -->
-[Project-1]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-2/README.md
+[Project-2]: https://github.com/pingcap/talent-plan/blob/master/rust/projects/project-2/README.md
