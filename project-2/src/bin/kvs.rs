@@ -36,7 +36,7 @@ fn main() -> Result<()> {
             if let Some(value) = store.get(key.to_owned())? {
                 println!("{}", value);
             } else {
-                println!("key not found");
+                println!("Key not found");
             }
         }
 
@@ -47,7 +47,7 @@ fn main() -> Result<()> {
             match store.remove(key.to_owned()) {
                 Ok(()) => {}
                 Err(KvStoreError::KeyNotFound) => {
-                    eprintln!("Key not found");
+                    println!("Key not found");
                     exit(1);
                 }
                 Err(e) => return Err(e),

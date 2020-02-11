@@ -8,4 +8,4 @@ doc:
 	cargo doc --open
 
 test:
-	cargo test --test
+	cargo test --tests
