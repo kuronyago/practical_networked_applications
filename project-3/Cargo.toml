@@ -9,10 +9,18 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
-structopt = "0.3.9"
-failure = "0.1.6"
-serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.47"
+structopt = "0.3.12"
+failure = "0.1.7"
+serde = { version = "1.0.105", features = ["derive"] }
+serde_json = "1.0.48"
 log = "0.4.8"
 env_logger = "0.7.1"
 sled = "0.31.0"
+
+[dev-dependencies]
+assert_cmd = "0.12"
+tempfile = "3.1.0"
+criterion = "0.3.1"
+predicates = "1.0.4"
+rand = "0.7.3"
+walkdir = "2.3.1"
