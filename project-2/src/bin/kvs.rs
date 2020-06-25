@@ -1,5 +1,5 @@
 use clap::{App, Arg, SubCommand};
-use kvs::{KvStore, KvStoreError, Result};
+use project_2::{KvStore, KvStoreError, Result};
 use std::env::current_dir;
 use std::process::exit;
 
