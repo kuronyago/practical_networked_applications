@@ -7,9 +7,9 @@ use std::collections::HashMap;
 ///
 /// How To Use:
 /// ```rust
-/// use kvs::KvStore;
+/// use project_1::KvStore;
 ///
-/// fn main {
+/// fn main() {
 ///     let mut storage: KvStore = KvStore::new();
 ///     storage.set(String::from("key"), String::from("value"));
 ///     let value: Option<String> = storage.get(String::from("key"));
