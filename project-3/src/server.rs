@@ -1,7 +1,8 @@
-use crate::{Engine, Request, Result};
+use crate::{Engine, GetResponse, RemoveResponse, Request, Result, SetResponse};
+use serde::Serialize;
 use serde_json::Deserializer;
 use std::{
-    io::{BufReader, BufWriter},
+    io::{BufReader, BufWriter, Write},
     net::{TcpListener, TcpStream, ToSocketAddrs},
 };
 
@@ -10,11 +11,11 @@ pub struct Server<T: Engine> {
 }
 
 impl<T: Engine> Server<T> {
-    fn new(engine: T) -> Self {
+    pub fn new(engine: T) -> Self {
         Server { engine }
     }
 
-    fn run<A: ToSocketAddrs>(&mut self, addr: A) -> Result<()> {
+    pub fn run<A: ToSocketAddrs>(mut self, addr: A) -> Result<()> {
         let listener = TcpListener::bind(addr)?;
 
         for stream in listener.incoming() {
@@ -43,12 +44,49 @@ impl<T: Engine> Server<T> {
             let request = request?;
 
             match request {
-                Request::Get { key } => {}
-                Request::Set { key, value } => {}
-                Request::Remove { key } => {}
-            }
+                Request::Get { key } => {
+                    let resp: GetResponse = {
+                        match self.engine.get(key) {
+                            Ok(value) => GetResponse::Ok(value),
+                            Err(err) => GetResponse::Err(format!("{}", err)),
+                        }
+                    };
+
+                    send_response(&mut writer, resp)?;
+                }
+                Request::Set { key, value } => {
+                    let resp: SetResponse = {
+                        match self.engine.set(key, value) {
+                            Ok(_) => SetResponse::Ok(()),
+                            Err(err) => SetResponse::Err(format!("{}", err)),
+                        }
+                    };
+
+                    send_response(&mut writer, resp)?;
+                }
+                Request::Remove { key } => {
+                    let resp: RemoveResponse = {
+                        match self.engine.remove(key) {
+                            Ok(_) => RemoveResponse::Ok(()),
+                            Err(err) => RemoveResponse::Err(format!("{}", err)),
+                        }
+                    };
+
+                    send_response(&mut writer, resp)?;
+                }
+            };
         }
 
         Ok(())
     }
+}
+
+fn send_response<W, S>(writer: &mut W, value: S) -> std::io::Result<()>
+where
+    W: std::io::Write,
+    S: Serialize,
+{
+    let mut writer = writer;
+    serde_json::to_writer(&mut writer, &value)?;
+    writer.flush()
 }
