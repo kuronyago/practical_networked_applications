@@ -1,4 +1,4 @@
-pub use common::Request;
+pub use common::{GetResponse, RemoveResponse, Request, SetResponse};
 pub use engine::{Engine, Store};
 pub use error::{Error, Result};
 pub use server::Server;

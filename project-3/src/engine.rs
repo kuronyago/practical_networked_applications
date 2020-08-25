@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, HashMap},
     fs::File,
-    io::{BufReader, Read, Seek, SeekFrom, Write},
+    io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write},
     ops::Range,
     path::{Path, PathBuf},
 };
@@ -72,12 +72,26 @@ impl Engine for Store {
         }
     }
     fn remove(&mut self, key: String) -> Result<()> {
-        todo!()
+        if self.index.contains_key(&key) {
+            {
+                let cmd = Command::Remove { key: key.clone() };
+                serde_json::to_writer(&mut self.writer, &cmd)?;
+            }
+            self.writer.flush()?;
+            let removed = self
+                .index
+                .remove(&key)
+                .expect("key not found after index.contains_key");
+            self.uncompacted += removed.len;
+            Ok(())
+        } else {
+            Err(Error::KeyNotFound)
+        }
     }
 }
 
 struct BufWriterWithPos<T: Write + Seek> {
-    writer: T,
+    writer: BufWriter<T>,
     pos: u64,
 }
 
@@ -88,16 +102,20 @@ struct BufReaderWithPos<T: Read + Seek> {
 
 impl<T: Write + Seek> Write for BufWriterWithPos<T> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        todo!()
+        let len = self.writer.write(buf)?;
+
+        self.pos += len as u64;
+        Ok(len)
     }
     fn flush(&mut self) -> std::io::Result<()> {
-        todo!()
+        self.writer.flush()
     }
 }
 
 impl<T: Write + Seek> Seek for BufWriterWithPos<T> {
     fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
-        todo!()
+        self.pos = self.writer.seek(pos)?;
+        Ok(self.pos)
     }
 }
 
@@ -110,7 +128,9 @@ impl<T: Read + Seek> Seek for BufReaderWithPos<T> {
 
 impl<T: Read + Seek> Read for BufReaderWithPos<T> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        todo!()
+        let len = self.reader.read(buf)?;
+        self.pos += len as u64;
+        Ok(len)
     }
 }
 
@@ -121,8 +141,12 @@ struct CommandPosition {
 }
 
 impl From<(u64, Range<u64>)> for CommandPosition {
-    fn from(_: (u64, Range<u64>)) -> Self {
-        todo!()
+    fn from((gen, range): (u64, Range<u64>)) -> Self {
+        CommandPosition {
+            gen,
+            pos: range.start,
+            len: range.end - range.start,
+        }
     }
 }
 
