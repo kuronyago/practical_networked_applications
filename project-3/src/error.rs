@@ -3,12 +3,14 @@ use std::io::Error as ErrorIO;
 
 #[derive(Fail, Debug)]
 pub enum Error {
-    #[fail(display = "KEY not found")]
+    #[fail(display = "key not found")]
     KeyNotFound,
-    #[fail(display = "IO error")]
+    #[fail(display = "io error")]
     IO(ErrorIO),
     #[fail(display = "serde error")]
     Serde(serde_json::Error),
+    #[fail(display = "unexpected command type")]
+    UnexpectedCommand,
 }
 
 impl From<ErrorIO> for Error {
