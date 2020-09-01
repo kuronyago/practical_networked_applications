@@ -31,9 +31,8 @@ impl Opt {
         match engine {
             Engine::Kvs => {
                 let path = current_dir()?;
-
+                info!("server addr: {}", self.addr);
                 let kvs_engine = Store::open(path)?;
-
                 KvsServer::new(kvs_engine).run(self.addr)
             }
             Engine::Sled => unimplemented!(),
@@ -50,6 +49,9 @@ arg_enum! {
 }
 
 fn main() {
+    env_logger::init();
+    info!("start!");
+
     let mut opt: Opt = Opt::from_args();
 
     let res: Result<(), KvsError> = {
@@ -76,6 +78,7 @@ fn main() {
         error!("{}", err);
         std::process::exit(1);
     }
+    info!("stop!");
 }
 
 fn current_engine() -> KvsResult<Option<Engine>> {
