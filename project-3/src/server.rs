@@ -35,7 +35,6 @@ impl<T: Engine> Server<T> {
     }
 
     fn serve(&mut self, stream: TcpStream) -> Result<()> {
-        let peer = stream.peer_addr()?;
         let reader = BufReader::new(&stream);
         let mut writer = BufWriter::new(&stream);
         let request_reader = Deserializer::from_reader(reader).into_iter::<Request>();

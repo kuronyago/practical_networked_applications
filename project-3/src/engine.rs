@@ -24,7 +24,7 @@ const COPMACTION_THRESHOLD: u64 = 1024 * 1024;
 impl Store {
     pub fn open(dir: impl Into<PathBuf>) -> Result<Store> {
         let path = dir.into();
-        std::fs::create_dir(&path)?;
+        std::fs::create_dir_all(&path)?;
 
         let gen_list = sorted_gen_list(&path)?;
 
@@ -245,19 +245,14 @@ fn new_log_file(
     readers: &mut HashMap<u64, BufReaderWithPos<File>>,
 ) -> Result<BufWriterWithPos<File>> {
     let p = log_path(path, gen);
+    let file = std::fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open(&p)?;
     let file_to_read = File::open(&p)?;
-    let reader = BufReaderWithPos::new(file_to_read)?;
-    readers.insert(gen, reader);
-
-    let writer: BufWriterWithPos<File> = {
-        let file = std::fs::OpenOptions::new()
-            .create(true)
-            .write(true)
-            .append(true)
-            .open(&p)?;
-        BufWriterWithPos::new(file)?
-    };
-
+    let writer: BufWriterWithPos<File> = BufWriterWithPos::new(file)?;
+    readers.insert(gen, BufReaderWithPos::new(file_to_read)?);
     Ok(writer)
 }
 

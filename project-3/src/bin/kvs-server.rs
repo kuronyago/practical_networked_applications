@@ -6,17 +6,15 @@ extern crate log;
 
 use project_3::{Error as KvsError, Result as KvsResult, Server as KvsServer, Store};
 use std::env::current_dir;
-use std::fs::write;
 use std::net::SocketAddr;
 use structopt::StructOpt;
 
-const DEFAULT_ADDR: &str = "127.0.0.1:4000";
 const DEFAULT_ENGINE: Engine = Engine::Kvs;
 
 #[derive(StructOpt)]
 #[structopt(name = "kvs-server")]
 struct Opt {
-    #[structopt(long, default_value = "DEFAULT_ADDR")]
+    #[structopt(long, default_value = "127.0.0.1:4000")]
     addr: SocketAddr,
     #[structopt(long)]
     engine: Option<Engine>,
@@ -25,13 +23,13 @@ struct Opt {
 impl Opt {
     fn run(self) -> KvsResult<()> {
         let engine = self.engine.unwrap_or(DEFAULT_ENGINE);
-
-        write(current_dir()?.join("engine"), format!("{}", engine))?;
+        let write_path = current_dir()?.join("engine");
+        let write_contents = format!("{}", engine);
+        std::fs::write(write_path, write_contents)?;
 
         match engine {
             Engine::Kvs => {
                 let path = current_dir()?;
-                info!("server addr: {}", self.addr);
                 let kvs_engine = Store::open(path)?;
                 KvsServer::new(kvs_engine).run(self.addr)
             }
@@ -70,7 +68,10 @@ fn main() {
 
                 opt.run()
             }
-            Err(err) => Err(err),
+            Err(err) => {
+                error!("engine error: {}", err);
+                Err(err)
+            }
         }
     };
 
