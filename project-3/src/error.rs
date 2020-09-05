@@ -5,7 +5,7 @@ use std::io::Error as ErrorIO;
 pub enum Error {
     #[fail(display = "key not found")]
     KeyNotFound,
-    #[fail(display = "io error")]
+    #[fail(display = "io error: {}", _0)]
     IO(ErrorIO),
     #[fail(display = "serde error")]
     Serde(serde_json::Error),
