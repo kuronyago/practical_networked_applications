@@ -11,6 +11,8 @@ pub enum Error {
     Serde(serde_json::Error),
     #[fail(display = "unexpected command type")]
     UnexpectedCommand,
+    #[fail(display = "error: {}", _0)]
+    WithMessage(String),
 }
 
 impl From<ErrorIO> for Error {
