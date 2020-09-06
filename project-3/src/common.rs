@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-// use crate::Error as StoreError;
 
 #[derive(Deserialize, Serialize)]
 pub enum Request {

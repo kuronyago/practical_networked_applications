@@ -58,7 +58,58 @@ impl Store {
     }
 
     fn compact(&mut self) -> Result<()> {
-        unimplemented!()
+        let compaction_gen = self.current_gen + 1;
+        self.current_gen += 2;
+
+        self.writer = self.new_log_file(self.current_gen)?;
+        let mut writer = self.new_log_file(compaction_gen)?;
+
+        let mut new_compact_position: u64 = 0;
+        for command in self.index.values_mut() {
+            let reader = self.readers.get_mut(&command.pos).expect("msg");
+
+            if command.pos != reader.pos {
+                reader.seek(SeekFrom::Start(command.pos))?;
+            }
+
+            let mut reader = reader.take(command.len);
+
+            let len: u64 = std::io::copy(&mut reader, &mut writer)?;
+
+            let new_position_range = (
+                compaction_gen,
+                new_compact_position..new_compact_position + len,
+            );
+
+            let new_position: CommandPosition = new_position_range.into();
+
+            *command = new_position;
+            new_compact_position += len;
+        }
+
+        writer.flush()?;
+
+        {
+            let stales: Vec<u64> = self
+                .readers
+                .keys()
+                .filter(|&&gen| gen > compaction_gen)
+                .cloned()
+                .collect();
+
+            for stale in stales {
+                self.readers.remove(&stale);
+                let stale_log_path: PathBuf = log_path(&self.path, stale);
+                std::fs::remove_dir(stale_log_path)?;
+            }
+        }
+
+        self.uncompacted = 0;
+        Ok(())
+    }
+
+    fn new_log_file(&mut self, gen: u64) -> Result<BufWriterWithPos<File>> {
+        new_log_file(&self.path, gen, &mut self.readers)
     }
 }
 
