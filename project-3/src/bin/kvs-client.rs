@@ -1,22 +1,42 @@
-use project_3::Result;
+use project_3::{Client, Result};
 use std::process::exit;
 use structopt::StructOpt;
+
+#[macro_use]
+extern crate log;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "kvs-client")]
 struct Opt {
-    #[structopt(subcommand)]
+    #[structopt(flatten)]
     command: Command,
 }
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(name = "get", about = "get-command")]
-    Get,
-    #[structopt(name = "set", about = "set-command")]
-    Set,
-    #[structopt(name = "rm", about = "rm-command")]
-    Remove,
+    #[structopt(name = "get", about = "get the string value of a given string key")]
+    Get {
+        #[structopt(name = "KEY")]
+        key: String,
+        #[structopt(long, value_name = "IP:PORT", default_value = "127.0.0.1:4000")]
+        addr: String,
+    },
+    #[structopt(name = "set", about = "set the value of a string key to a string")]
+    Set {
+        #[structopt(name = "KEY")]
+        key: String,
+        #[structopt(name = "VALUE")]
+        value: String,
+        #[structopt(long, value_name = "IP:PORT", default_value = "127.0.0.1:4000")]
+        addr: String,
+    },
+    #[structopt(name = "rm", about = "remove a given string key")]
+    Remove {
+        #[structopt(name = "KEY")]
+        key: String,
+        #[structopt(long, value_name = "IP:PORT", default_value = "127.0.0.1:4000")]
+        addr: String,
+    },
 }
 
 fn main() {
@@ -28,17 +48,18 @@ fn main() {
 }
 
 fn run(opt: Opt) -> Result<()> {
-    unimplemented!()
-    // match opt.command {
-    //     Command::Get => {
-    //         unimplemented!()
-    //     },
-    //     Command::Set => {
-    //         unimplemented!()
-    //     },
-    //     Command::Remove => {
-    //         unimplemented!()
-    //     }
-    // }
-    // Ok(())
+    match opt.command {
+        Command::Get { key, addr } => {
+            let mut client = Client::connect(addr)?;
+
+            if let Some(value) = client.get(key)? {
+                info!("found: {}", value)
+            } else {
+                info!("key not found")
+            }
+        }
+        Command::Set { key, value, addr } => Client::connect(addr)?.set(key, value)?,
+        Command::Remove { key, addr } => Client::connect(addr)?.remove(key)?,
+    }
+    Ok(())
 }

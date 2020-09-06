@@ -2,7 +2,7 @@ use crate::{Engine, GetResponse, RemoveResponse, Request, Result, SetResponse};
 use serde::Serialize;
 use serde_json::Deserializer;
 use std::{
-    io::{BufReader, BufWriter, Write},
+    io::{BufReader, BufWriter},
     net::{TcpListener, TcpStream, ToSocketAddrs},
 };
 
