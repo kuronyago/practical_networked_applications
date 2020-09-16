@@ -2,9 +2,6 @@ use project_3::{Client, Result};
 use std::process::exit;
 use structopt::StructOpt;
 
-#[macro_use]
-extern crate log;
-
 #[derive(StructOpt, Debug)]
 #[structopt(name = "kvs-client")]
 struct Opt {
@@ -53,9 +50,9 @@ fn run(opt: Opt) -> Result<()> {
             let mut client = Client::connect(addr)?;
 
             if let Some(value) = client.get(key)? {
-                info!("found: {}", value)
+                println!("{}", value)
             } else {
-                info!("key not found")
+                println!("Key not found")
             }
         }
         Command::Set { key, value, addr } => Client::connect(addr)?.set(key, value)?,

@@ -4,7 +4,9 @@ extern crate clap;
 #[macro_use]
 extern crate log;
 
-use project_3::{Error as KvsError, Result as KvsResult, Server as KvsServer, Store};
+use project_3::{
+    Error as KvsError, Result as KvsResult, Server as KvsServer, Sled as KvsSled, Store,
+};
 use std::env::current_dir;
 use std::net::SocketAddr;
 use structopt::StructOpt;
@@ -23,17 +25,25 @@ struct Opt {
 impl Opt {
     fn run(self) -> KvsResult<()> {
         let engine = self.engine.unwrap_or(DEFAULT_ENGINE);
+        info!("kvs-server {}", env!("CARGO_PKG_VERSION"));
+        info!("Storage engine: {}", engine);
+        info!("Listening on {}", self.addr);
+
         let write_path = current_dir()?.join("engine");
         let write_contents = format!("{}", engine);
         std::fs::write(write_path, write_contents)?;
+        let path = current_dir()?;
 
         match engine {
             Engine::Kvs => {
-                let path = current_dir()?;
                 let kvs_engine = Store::open(path)?;
                 KvsServer::new(kvs_engine).run(self.addr)
             }
-            Engine::Sled => unimplemented!(),
+            Engine::Sled => {
+                let db = sled::open(path)?;
+                let kvs_engine = KvsSled::new(db);
+                KvsServer::new(kvs_engine).run(self.addr)
+            }
         }
     }
 }
@@ -47,8 +57,9 @@ arg_enum! {
 }
 
 fn main() {
-    env_logger::init();
-    info!("start!");
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Debug)
+        .init();
 
     let mut opt: Opt = Opt::from_args();
 

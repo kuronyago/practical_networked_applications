@@ -1,4 +1,4 @@
-use crate::{Result, Request, GetResponse, SetResponse, RemoveResponse, Error as KvsError};
+use crate::{Error as KvsError, GetResponse, RemoveResponse, Request, Result, SetResponse};
 use serde_json::de::{Deserializer, IoRead};
 use std::io::{BufReader, BufWriter, Write};
 use std::net::TcpStream;
@@ -22,7 +22,7 @@ impl Client {
     }
 
     pub fn get(&mut self, key: String) -> Result<Option<String>> {
-        serde_json::to_writer(&mut self.writer, &Request::Get{key})?;
+        serde_json::to_writer(&mut self.writer, &Request::Get { key })?;
         self.writer.flush()?;
 
         let resp: GetResponse = GetResponse::deserialize(&mut self.reader)?;
@@ -34,22 +34,22 @@ impl Client {
     }
 
     pub fn set(&mut self, key: String, value: String) -> Result<()> {
-        serde_json::to_writer(&mut self.writer, &Request::Set{key, value})?;
+        serde_json::to_writer(&mut self.writer, &Request::Set { key, value })?;
         self.writer.flush()?;
 
         match SetResponse::deserialize(&mut self.reader)? {
             SetResponse::Ok(data) => Ok(data),
             SetResponse::Err(message) => Err(KvsError::WithMessage(message)),
-        }        
+        }
     }
 
     pub fn remove(&mut self, key: String) -> Result<()> {
-        serde_json::to_writer(&mut self.writer, &Request::Remove{key})?;
+        serde_json::to_writer(&mut self.writer, &Request::Remove { key })?;
         self.writer.flush()?;
 
         match RemoveResponse::deserialize(&mut self.reader)? {
             RemoveResponse::Ok(data) => Ok(data),
             RemoveResponse::Err(message) => Err(KvsError::WithMessage(message)),
-        }        
+        }
     }
 }
