@@ -115,9 +115,9 @@ impl KvStore {
 
         self.current += 2;
 
-        self.writer = self.new_log_file(self.current)?;
+        self.writer = new_log(&self.path, self.current, &mut self.readers)?;
 
-        let mut compaction_writer = self.new_log_file(compaction_generation)?;
+        let mut compaction_writer = new_log(&self.path, compaction_generation, &mut self.readers)?;
 
         let mut new_position = 0;
 
@@ -226,10 +226,6 @@ impl KvStore {
             index,
             uncompacted,
         })
-    }
-
-    fn new_log_file(&mut self, generation: u64) -> Result<Writer<File>> {
-        new_log(&self.path, generation, &mut self.readers)
     }
 }
 

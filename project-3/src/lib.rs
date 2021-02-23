@@ -5,9 +5,6 @@ pub use engines::{Sled, Store};
 pub use error::{Error, Result};
 pub use server::Server;
 
-#[macro_use]
-extern crate log;
-
 mod client;
 mod common;
 mod engine;

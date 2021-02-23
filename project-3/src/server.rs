@@ -1,6 +1,8 @@
 use crate::{Engine, GetResponse, RemoveResponse, Request, Result, SetResponse};
 use serde::Serialize;
 use serde_json::Deserializer;
+use slog::{debug, error, info, Logger};
+use std::thread;
 use std::{
     io::{BufReader, BufWriter},
     net::{TcpListener, TcpStream, ToSocketAddrs},
@@ -8,11 +10,12 @@ use std::{
 
 pub struct Server<T: Engine> {
     engine: T,
+    logger: Logger,
 }
 
 impl<T: Engine> Server<T> {
-    pub fn new(engine: T) -> Self {
-        Server { engine }
+    pub fn new(engine: T, logger: Logger) -> Self {
+        Server { engine, logger }
     }
 
     pub fn run<A: ToSocketAddrs>(mut self, addr: A) -> Result<()> {
@@ -22,11 +25,11 @@ impl<T: Engine> Server<T> {
             match stream {
                 Ok(tcp_stream) => {
                     if let Err(err) = self.serve(tcp_stream) {
-                        error!("serving failed: {}", err)
+                        error!(self.logger, "serving failed: {}", err)
                     }
                 }
                 Err(err) => {
-                    error!("connection failed: {}", err);
+                    error!(self.logger, "connection failed: {}", err);
                 }
             }
         }
@@ -40,6 +43,8 @@ impl<T: Engine> Server<T> {
         let request_reader = Deserializer::from_reader(reader).into_iter::<Request>();
 
         for request in request_reader {
+            info!(self.logger, "current thread: {:?}", thread::current().id());
+
             let request = request?;
 
             match request {
