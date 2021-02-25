@@ -1,16 +1,9 @@
-#[macro_use]
-extern crate clap;
-
-#[macro_use]
-extern crate slog;
-extern crate slog_async;
-extern crate slog_bunyan;
-
-use slog::Drain;
-
+use clap::arg_enum;
 use project_3::{
     Error as KvsError, Result as KvsResult, Server as KvsServer, Sled as KvsSled, Store,
 };
+use slog::Drain;
+use slog::{error, info, o};
 use std::env::current_dir;
 use std::net::SocketAddr;
 use structopt::StructOpt;
