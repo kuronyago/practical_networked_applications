@@ -1,16 +1,23 @@
-use anyhow::Result;
-use thiserror::Error;
+// use anyhow::Result;
+// use thiserror::Error;
 
+use slog::{o, Drain, Logger};
+
+pub use api::{Request, Response};
+
+mod api;
 mod engines;
+mod pool;
+mod server;
 
-pub type StoreResult<T> = Result<T, StoreError>;
+pub type StoreResult<T> = anyhow::Result<T, StoreError>;
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum StoreError {
     #[error("key not found")]
     KeyNotFound,
     #[error("serialization failed")]
-    Serde,
+    Serde(#[from] serde_json::Error),
     #[error("unexpected command")]
     UnexpectedCommand,
     #[error(transparent)]
@@ -23,17 +30,23 @@ pub trait Engine: Clone + Send + 'static {
     fn remove(&self, key: String) -> StoreResult<()>;
 }
 
-pub struct ThreadSpawner;
-
-impl ThreadSpawner {
-    fn new(_threads: u32) -> StoreResult<Self> {
-        Ok(ThreadSpawner)
-    }
-
-    fn spawn<F>(&self, f: F)
+pub trait ThreadPool {
+    fn new(threads: u32) -> StoreResult<Self>
     where
-        F: FnOnce() + Send + 'static,
-    {
-        std::thread::spawn(f);
-    }
+        Self: Sized;
+    fn spawn<T>(&self, job: T)
+    where
+        T: FnOnce() + Send + 'static;
+}
+
+pub fn logger(module: &str) -> Logger {
+    let drain = slog_json::Json::new(std::io::stdout())
+        .set_pretty(false)
+        .add_default_keys()
+        .build()
+        .fuse();
+
+    let fuse = slog_async::Async::new(drain).build().fuse();
+
+    Logger::root(fuse, o!("module" => module.to_owned()))
 }
